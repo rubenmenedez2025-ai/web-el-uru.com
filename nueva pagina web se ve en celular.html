@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Distri El Uru</title>
+  <style>
+    /* ----------------- Estilos generales ----------------- */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f9f9f9;
+    }
+
+    header {
+      background: #0a74da;
+      color: white;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    header h1 { margin: 0; font-size: 1.5rem; }
+
+    header button, header a {
+      background: #fff;
+      color: #0a74da;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: bold;
+      margin-left: 5px;
+    }
+
+    header button:hover, header a:hover { background: #e6e6e6; }
+
+    .contenedor-principal {
+      display: flex;
+      flex-wrap: wrap;
+      margin: 20px;
+    }
+
+    .filtros {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .filtros button, .filtros input {
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+    }
+
+    main#productos {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 15px;
+      flex: 1;
+    }
+
+    .producto {
+      background: white;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+    }
+
+    .producto:hover { transform: translateY(-3px); }
+
+    .producto img {
+      width: 100%;
+      max-width: 150px;
+      height: auto;
+      margin-bottom: 10px;
+      border-radius: 6px;
+    }
+
+    .producto input { width: 50px; margin-bottom: 5px; }
+
+    .producto button {
+      background: #0a74da;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .producto button:hover { background: #065bb5; }
+
+    #carrito {
+      width: 250px;
+      background: #fff;
+      border-radius: 8px;
+      padding: 10px;
+      margin-left: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      height: fit-content;
+    }
+
+    #carrito ul { list-style: none; padding: 0; }
+
+    #carrito li {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+
+    #carrito button {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    #carrito button:hover { background: #c0392b; }
+
+    .agregado {
+      border: 2px solid #0a74da;
+      animation: pulse 0.3s;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    footer {
+      text-align: center;
+      padding: 10px;
+      background: #0a74da;
+      color: white;
+      margin-top: 20px;
+    }
+
+    @media(max-width: 768px){
+      .contenedor-principal { flex-direction: column; }
+      #carrito { width: 100%; margin-left: 0; margin-top: 20px; }
+      main#productos { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Distri El Uru</h1>
+  <button id="nombre-cliente">Ingresar Nombre</button>
+  <a class="whatsapp" href="https://wa.me/5492920248292" target="_blank">WhatsApp</a>
+</header>
+
+<section class="contenedor-principal">
+
+  <div class="filtros">
+    <button onclick="filtrar('todos')">Todos</button>
+    <button onclick="filtrar('cerveza')">Cervezas</button>
+    <button onclick="filtrar('vino')">Vinos</button>
+    <button onclick="filtrar('gaseosa')">Gaseosas</button>
+    <input type="text" id="buscador" placeholder="Buscar..." oninput="buscar()">
+  </div>
+
+  <main id="productos">
+    <!-- Productos cargados por JS -->
+  </main>
+
+  <aside id="carrito">
+    <h2>Carrito</h2>
+    <ul id="lista-carrito"></ul>
+    <button onclick="enviarPedido()">Enviar pedido por WhatsApp</button>
+  </aside>
+
+</section>
+
+<footer>
+  <p>&copy; Distri El Uru - Distribuidor de bebidas</p>
+</footer>
+
+<script>
+let productos = [];
+let carrito = [];
+let cliente = "";
+
+document.addEventListener("DOMContentLoaded", () => {
+  productos = [
+    { id: 1, nombre: "Cerveza Palermo x 1lt x 12un", precio: 25500, categoria: "cerveza", imagen: "img/palermo.jpg" },
+    { id: 2, nombre: "Viñas de Balbo x 1.125lt x 6un", precio: 15300, categoria: "vino", imagen: "img/vinasdebalbo.jpg" },
+    { id: 7, nombre: "Otro Loco Mas x 750ml x 6un", precio: 21000, categoria: "vino", imagen: "img/otrolocomas.jpg" },
+    { id: 8, nombre: "Cordero Con Piel De Lobo x 750ml x 6un", precio: 18000, categoria: "vino", imagen: "img/corderoconpieldelobo.jpg" },
+    { id: 9, nombre: "Fernet Branca x 750ml x 1un", precio: 14500, categoria: "vino", imagen: "img/fernetbranca750ml.jpg" },
+    { id: 3, nombre: "Brios Manzana x 1.5lt x 6un", precio: 5600, categoria: "gaseosa", imagen: "img/briosmanzana.jpg" },
+    { id: 4, nombre: "Brios Pomelo x 1.5lt x 6un", precio: 5600, categoria: "gaseosa", imagen: "img/briospomelo.jpg" },
+    { id: 5, nombre: "Brios Multifruta x 1.5lt x 6un", precio: 5600, categoria: "gaseosa", imagen: "img/briosmultifruta.jpg" },
+    { id: 6, nombre: "Brios Naranja x 1.5lt x 6un", precio: 5600, categoria: "gaseosa", imagen: "img/briosnaranja.jpg" },
+    { id: 11, nombre: "Manaos Cola x 3lt x 6un", precio: 12100, categoria: "gaseosa", imagen: "img/manaoscola.jpg" },
+    { id: 12, nombre: "Manaos Naranja x 3lt x 6un", precio: 12100, categoria: "gaseosa", imagen: "img/manaosnaranja.jpg" },
+    { id: 13, nombre: "Manaos Pomelo x 3lt x 6un", precio: 12100, categoria: "gaseosa", imagen: "img/manaospomelo.jpg" },
+    { id: 14, nombre: "Manaos Lima Limón x 3lt x 6un", precio: 12100, categoria: "gaseosa", imagen: "img/manaoslima.jpg" }
+  ];
+  mostrar(productos);
+});
+
+/* Mostrar productos */
+function mostrar(lista) {
+  const contenedor = document.getElementById("productos");
+  contenedor.innerHTML = "";
+  lista.forEach(p => {
+    contenedor.innerHTML += `
+      <div class="producto" id="producto-${p.id}">
+        <img src="${p.imagen}" alt="${p.nombre}">
+        <h3>${p.nombre}</h3>
+        <p>$${p.precio}</p>
+        <input type="number" min="1" value="1" id="cant-${p.id}">
+        <button onclick="agregar(${p.id})">Agregar</button>
+      </div>
+    `;
+  });
+}
+
+/* Filtros */
+function filtrar(cat) {
+  if(cat==="todos") mostrar(productos);
+  else mostrar(productos.filter(p => p.categoria===cat));
+}
+
+/* Agregar al carrito */
+function agregar(id) {
+  const cantidad = parseInt(document.getElementById(`cant-${id}`).value);
+  const producto = productos.find(p => p.id===id);
+  const existe = carrito.find(p => p.nombre===producto.nombre);
+  if(existe) existe.cantidad += cantidad;
+  else carrito.push({nombre:producto.nombre, precio:producto.precio, cantidad});
+  const div=document.getElementById(`producto-${id}`);
+  div.classList.add("agregado");
+  setTimeout(()=>div.classList.remove("agregado"),300);
+  mostrarCarrito();
+}
+
+/* Mostrar carrito */
+function mostrarCarrito() {
+  const lista=document.getElementById("lista-carrito");
+  lista.innerHTML="";
+  let total=0;
+  carrito.forEach((p,index)=>{
+    total+=p.precio*p.cantidad;
+    lista.innerHTML+=`<li>${p.nombre} x ${p.cantidad} <button onclick="eliminar(${index})">✖</button></li>`;
+  });
+  if(total>0) lista.innerHTML+=`<li><strong>Total: $${total}</strong></li>`;
+}
+
+/* Eliminar del carrito */
+function eliminar(index){ carrito.splice(index,1); mostrarCarrito(); }
+
+/* WhatsApp */
+function enviarPedido(){
+  if(carrito.length===0) return alert("El carrito está vacío");
+  let mensaje="Pedido:\n\n"; let total=0;
+  carrito.forEach(p=>{mensaje+=`${p.nombre} x ${p.cantidad}\n`; total+=p.precio*p.cantidad;});
+  mensaje+=`\nTotal: $${total}`;
+  const telefono="5492920248292";
+  window.open(`https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`,"_blank");
+}
+
+/* Buscador */
+function buscar(){ const texto=document.getElementById("buscador").value.toLowerCase(); mostrar(productos.filter(p=>p.nombre.toLowerCase().includes(texto))); }
+
+/* Capturar nombre */
+document.getElementById("nombre-cliente").addEventListener("click", ()=>{
+  cliente=prompt("Por favor, ingresa tu nombre:");
+  if(cliente) alert(`¡Gracias, ${cliente}! Ahora puedes realizar tu pedido.`);
+  else alert("No ingresaste un nombre.");
+});
+</script>
+
+</body>
+</html>
